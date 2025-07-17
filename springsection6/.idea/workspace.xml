@@ -5,17 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ce333101-c6d4-4464-9b2b-421611a0b5b8" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/jonathan/config/EazyBankProdUsernamePwdAuthenticationProvider.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/jonathan/config/ProjectSecurityProdConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/application_prod.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jonathan/EazyBankBackendApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jonathan/EazyBankBackendApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jonathan/config/EazyBankUsernamePwdAuthenticationProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jonathan/config/EazyBankUsernamePwdAuthenticationProvider.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/jonathan/config/ProjectSecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jonathan/config/ProjectSecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/jonathan/EazyBankBackendApplication.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/jonathan/EazyBankBackendApplication.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/jonathan/config/EazyBankUsernamePwdAuthenticationProvider.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/jonathan/config/EazyBankUsernamePwdAuthenticationProvider.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -180,7 +170,7 @@
       <workItem from="1752704209022" duration="398000" />
       <workItem from="1752718796316" duration="3342000" />
       <workItem from="1752761501565" duration="28000" />
-      <workItem from="1752761613818" duration="3806000" />
+      <workItem from="1752761613818" duration="4654000" />
     </task>
     <servers />
   </component>
