@@ -5,10 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ce333101-c6d4-4464-9b2b-421611a0b5b8" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/jonathan/config/EazyBankProdUsernamePwdAuthenticationProvider.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/jonathan/config/ProjectSecurityProdConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/application_prod.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/jonathan/EazyBankBackendApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jonathan/EazyBankBackendApplication.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/jonathan/config/EazyBankUsernamePwdAuthenticationProvider.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jonathan/config/EazyBankUsernamePwdAuthenticationProvider.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/jonathan/config/ProjectSecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/jonathan/config/ProjectSecurityConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/jonathan/EazyBankBackendApplication.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/jonathan/EazyBankBackendApplication.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/jonathan/config/EazyBankUsernamePwdAuthenticationProvider.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/jonathan/config/EazyBankUsernamePwdAuthenticationProvider.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,13 +80,13 @@
     "Spring Boot.EazyBankBackendApplication.executor": "Debug",
     "git-widget-placeholder": "main",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/jmp_2/OneDrive/Documentos/Proyectos/Java/Spring Security/springsection5",
+    "last_opened_file_path": "C:/Users/jmp_2/OneDrive/Documentos/Proyectos/Java/Spring Security/springsection6/src/main/resources",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "editor.reader.mode",
+    "settings.editor.selected.configurable": "spring",
     "vue.rearranger.settings.migration": "true"
   },
   "keyToStringList": {
@@ -90,16 +97,22 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\jmp_2\OneDrive\Documentos\Proyectos\Java\Spring Security\springsection6\src\main\resources" />
       <recent name="C:\Users\jmp_2\OneDrive\Documentos\Proyectos\Spring Security\section2\springsection2\src\main\java\com\jonathan\controller" />
     </key>
     <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.jonathan.config" />
       <recent name="com.jonathan.springsection1.controller" />
     </key>
   </component>
   <component name="RunManager">
     <configuration name="EazyBankBackendApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+      <option name="ACTIVE_PROFILES" value="prod" />
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
       <module name="springsection6" />
+      <selectedOptions>
+        <option name="environmentVariables" />
+      </selectedOptions>
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.jonathan.EazyBankBackendApplication" />
       <extension name="coverage">
         <pattern>
@@ -165,7 +178,9 @@
       <workItem from="1752699991032" duration="281000" />
       <workItem from="1752701627095" duration="2512000" />
       <workItem from="1752704209022" duration="398000" />
-      <workItem from="1752718796316" duration="2564000" />
+      <workItem from="1752718796316" duration="3342000" />
+      <workItem from="1752761501565" duration="28000" />
+      <workItem from="1752761613818" duration="3806000" />
     </task>
     <servers />
   </component>
@@ -189,34 +204,13 @@
       <path value="$PROJECT_DIR$" />
     </ignored-roots>
   </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>jar://$MAVEN_REPOSITORY$/org/springframework/security/spring-security-crypto/6.5.1/spring-security-crypto-6.5.1-sources.jar!/org/springframework/security/crypto/bcrypt/BCryptPasswordEncoder.java</url>
-          <line>105</line>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>jar://$MAVEN_REPOSITORY$/org/springframework/security/spring-security-crypto/6.5.1/spring-security-crypto-6.5.1-sources.jar!/org/springframework/security/crypto/bcrypt/BCryptPasswordEncoder.java</url>
-          <line>121</line>
-          <option name="timeStamp" value="2" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/com/jonathan/config/EazyBankUsernamePwdAuthenticationProvider.java</url>
-          <line>36</line>
-          <option name="timeStamp" value="3" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/com/jonathan/config/EazyBankUsernamePwdAuthenticationProvider.java</url>
-          <line>72</line>
-          <option name="timeStamp" value="4" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
-  </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
     <select />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/springsection6$EazyBankBackendApplication.ic" NAME="EazyBankBackendApplication Coverage Results" MODIFIED="1752763731063" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="true">
+      <FILTER>com.jonathan.*</FILTER>
+    </SUITE>
   </component>
 </project>
