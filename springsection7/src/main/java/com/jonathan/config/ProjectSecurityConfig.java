@@ -1,5 +1,7 @@
 package com.jonathan.config;
 
+import com.jonathan.exceptionhandling.CustomAccessDeniedHandler;
+import com.jonathan.exceptionhandling.CustomBasicAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -18,24 +20,32 @@ public class ProjectSecurityConfig {
   @Bean
   SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
     http
+//        .sessionManagement(session -> session.invalidSessionUrl("/invalidSession")) // for mvc applications
+        .sessionManagement(session -> session.maximumSessions(1) // Set a maximum number of simultaneous sessions per user
+            .maxSessionsPreventsLogin(true) // avoid login if the maximum sessions are reached
+        )
         .csrf(csrfConfig -> csrfConfig.disable())
         .authorizeHttpRequests(
-        (requests) -> requests
-            .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards")
-            .authenticated()
-            .requestMatchers("/notices", "/contact", "/error", "/register").permitAll()
-    );
+            (requests) -> requests
+                .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards")
+                .authenticated()
+                .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession").permitAll()
+        );
     http.formLogin(withDefaults());
-//    http.formLogin(formLoginConfigurer -> formLoginConfigurer.disable());
-    http.httpBasic(withDefaults());
-//    http.httpBasic(httpBasicConfigurer -> httpBasicConfigurer.disable());
+    http.httpBasic(httpBasicConfigurer ->
+        httpBasicConfigurer.authenticationEntryPoint(
+            new CustomBasicAuthenticationEntryPoint()
+        )
+    );
+//    http.exceptionHandling(
+//        exceptionHandlingConfigurer -> exceptionHandlingConfigurer.authenticationEntryPoint(
+//            new CustomBasicAuthenticationEntryPoint())); //it is a global config
+    http.exceptionHandling(exceptionHandlingConfigurer ->
+        exceptionHandlingConfigurer.accessDeniedHandler(new CustomAccessDeniedHandler()
+        )
+    );
     return http.build();
   }
-
-//  @Bean
-//  public UserDetailsService userDetailsService(DataSource dataSource) {
-//    return new JdbcUserDetailsManager(dataSource);
-//  }
 
   @Bean
   public PasswordEncoder passwordEncoder() {

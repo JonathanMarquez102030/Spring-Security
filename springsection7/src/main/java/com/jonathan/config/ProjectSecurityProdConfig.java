@@ -1,5 +1,6 @@
 package com.jonathan.config;
 
+import com.jonathan.exceptionhandling.CustomBasicAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -20,6 +21,9 @@ public class ProjectSecurityProdConfig {
   @Bean
   SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
     http
+        .sessionManagement(session -> session.maximumSessions(1) // Set a maximum number of simultaneous sessions per user
+            .maxSessionsPreventsLogin(true) // avoid login if the maximum sessions are reached
+        )
         //only accepts https requests
         .redirectToHttps((https) -> https.requestMatchers(AnyRequestMatcher.INSTANCE))
         .csrf(AbstractHttpConfigurer::disable)
@@ -31,7 +35,11 @@ public class ProjectSecurityProdConfig {
         );
     http.formLogin(withDefaults());
 //    http.formLogin(formLoginConfigurer -> formLoginConfigurer.disable());
-    http.httpBasic(withDefaults());
+    http.httpBasic(httpBasicConfigurer ->
+        httpBasicConfigurer.authenticationEntryPoint(
+            new CustomBasicAuthenticationEntryPoint()
+        )
+    );
 //    http.httpBasic(httpBasicConfigurer -> httpBasicConfigurer.disable());
     return http.build();
   }
