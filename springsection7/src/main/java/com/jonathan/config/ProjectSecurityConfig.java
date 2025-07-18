@@ -19,6 +19,10 @@ public class ProjectSecurityConfig {
 
   @Bean
   SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+    //Defines the strategy to pretect the application of session fixation attacks by default is change session id
+    http.sessionManagement(session ->
+        session.sessionFixation(sfc -> sfc.changeSessionId())
+    );
     http
 //        .sessionManagement(session -> session.invalidSessionUrl("/invalidSession")) // for mvc applications
         .sessionManagement(session -> session.maximumSessions(1) // Set a maximum number of simultaneous sessions per user
