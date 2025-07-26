@@ -1,0 +1,25 @@
+
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "chrome",  // Depura en Chrome
+            "request": "launch",
+            "name": "Debug Angular App",
+            "url": "http://localhost:4200",  // Puerto de Angular
+            "webRoot": "${workspaceFolder}",
+            "sourceMaps": true,
+            "trace": true
+        },
+        {
+            "type": "pwa-chrome",  // Alternativa moderna
+            "request": "launch",
+            "name": "Debug Angular (PWA Chrome)",
+            "url": "http://localhost:4200",
+            "webRoot": "${workspaceFolder}"
+        }
+    ]
+}

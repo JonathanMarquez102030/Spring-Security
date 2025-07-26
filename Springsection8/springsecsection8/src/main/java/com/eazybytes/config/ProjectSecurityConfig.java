@@ -32,9 +32,13 @@ public class ProjectSecurityConfig {
     CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler =
         new CsrfTokenRequestAttributeHandler();
 
+    // Esta configuraci n se utiliza para que Spring Security no guarde
+    // expl citamente la informaci n de la sesi n en la base de datos.
+    // De esta manera, Spring Security no se encargar  de guardar la
+    // informaci n de la sesi n en la base de datos, lo que mejora el rendimiento
+    // de la aplicaci n.
     http.securityContext(contextConfig ->
         contextConfig.requireExplicitSave(false));
-
     http.sessionManagement(sessionConfig ->
         sessionConfig.sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
     );
@@ -59,6 +63,7 @@ public class ProjectSecurityConfig {
     //Adding CSRF configuration
     http.csrf(csrfConfig ->
             csrfConfig.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
+                .ignoringRequestMatchers("/register", "/contact")
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
         )
         .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
