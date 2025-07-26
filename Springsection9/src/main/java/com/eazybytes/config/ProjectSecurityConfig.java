@@ -32,11 +32,11 @@ public class ProjectSecurityConfig {
     CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler =
         new CsrfTokenRequestAttributeHandler();
 
-    // Esta configuraci n se utiliza para que Spring Security no guarde
-    // expl citamente la informaci n de la sesi n en la base de datos.
-    // De esta manera, Spring Security no se encargar  de guardar la
-    // informaci n de la sesi n en la base de datos, lo que mejora el rendimiento
-    // de la aplicaci n.
+    // Esta configuración se utiliza para que Spring Security no guarde
+    // explícitamente la información de la sesión en la base de datos.
+    // De esta manera, Spring Security no se encargará de guardar la
+    // información de la sesión en la base de datos, lo que mejora el rendimiento
+    // de la aplicación.
     http.securityContext(contextConfig ->
         contextConfig.requireExplicitSave(false));
     http.sessionManagement(sessionConfig ->
@@ -73,11 +73,15 @@ public class ProjectSecurityConfig {
              smc.invalidSessionUrl("/invalidSession").maximumSessions(3) //Invalida nuevas sesiones cuando se llega al maximo de sesiones, en lugar de cerrar la anterior
                 .maxSessionsPreventsLogin(true))
                 .requiresChannel(rcc ->
-                    rcc.anyRequest().requiresInsecure()); // Only HTTP
+                    rcc.anyRequest().requiresInsecure()); // permite solo peticiones de HTTP y no HTTPS
 
     //Adding http requests configuration
     http.authorizeHttpRequests((requests) -> requests
-        .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards", "/user").authenticated()
+        .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT") //hasAuthority to access with specific authority
+        .requestMatchers( "/myBalance").hasAnyAuthority("VIEWBALANCE", "VIEWACCOUNT") //hasAnyAuthority to access with any of the different authorities
+        .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
+        .requestMatchers("/myCards").hasAuthority("VIEWCARDS")
+        .requestMatchers("/user").authenticated()
         .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession")
         .permitAll());
 
