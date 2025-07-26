@@ -9,12 +9,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.password.CompromisedPasswordChecker;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -27,6 +29,17 @@ public class ProjectSecurityConfig {
 
   @Bean
   SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+    CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler =
+        new CsrfTokenRequestAttributeHandler();
+
+    http.securityContext(contextConfig ->
+        contextConfig.requireExplicitSave(false));
+
+    http.sessionManagement(sessionConfig ->
+        sessionConfig.sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
+    );
+
+
     //Adding CORS security Config
     http.cors(corsConfigurer -> corsConfigurer.configurationSource(
         new CorsConfigurationSource() {
@@ -45,21 +58,21 @@ public class ProjectSecurityConfig {
 
     //Adding CSRF configuration
     http.csrf(csrfConfig ->
-            csrfConfig.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+            csrfConfig.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
         )
         .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
 
     //Adding session management configuration
-    http.sessionManagement(smc -> smc.invalidSessionUrl("/invalidSession").maximumSessions(3)
-            .maxSessionsPreventsLogin(true))
-        .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()); // Only HTTP
-
-    //Adding CSRF config
-    http.csrf(csrfConfig -> csrfConfig.disable());
+    http.sessionManagement(smc ->
+             smc.invalidSessionUrl("/invalidSession").maximumSessions(3) //Invalida nuevas sesiones cuando se llega al maximo de sesiones, en lugar de cerrar la anterior
+                .maxSessionsPreventsLogin(true))
+                .requiresChannel(rcc ->
+                    rcc.anyRequest().requiresInsecure()); // Only HTTP
 
     //Adding http requests configuration
     http.authorizeHttpRequests((requests) -> requests
-        .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards").authenticated()
+        .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards", "/user").authenticated()
         .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession")
         .permitAll());
 
