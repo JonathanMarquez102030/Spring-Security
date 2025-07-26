@@ -8,6 +8,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.sql.Date;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -42,5 +43,9 @@ public class Customer {
   public void setCreateDt(Date createDt) {
     this.createDt = createDt;
   }
+
+  @OneToMany(mappedBy = "customer", fetch = FetchType.EAGER)
+  @JsonIgnore
+  private Set<Authority>  authorities;
 
 }
