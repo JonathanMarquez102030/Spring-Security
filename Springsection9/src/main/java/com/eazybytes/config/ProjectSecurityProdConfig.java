@@ -73,16 +73,21 @@ public class ProjectSecurityProdConfig {
     // .redirectToHttps((https) -> https.requestMatchers(AnyRequestMatcher.INSTANCE))
     // USE THE ABOVE CONFIG FOR HTTPS IN THE NEW VERSIONS OF SPRING SECURITY
 
-    http.requiresChannel(rcc -> rcc.anyRequest().requiresSecure()); // forza la comunicación mediante HTTPS solamente y no HTTP
+    http.requiresChannel(rcc -> rcc.anyRequest()
+        .requiresSecure()); // forza la comunicación mediante HTTPS solamente y no HTTP
 
     //Adding http requests configuration
     http.authorizeHttpRequests((requests) -> requests
         .requestMatchers("/myAccount")
-        .hasAuthority("VIEWACCOUNT") //hasAuthority to access with specific authority
-        .requestMatchers("/myBalance").hasAnyAuthority("VIEWBALANCE",
-            "VIEWACCOUNT") //hasAnyAuthority to access with any of the different authorities
-        .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
-        .requestMatchers("/myCards").hasAuthority("VIEWCARDS")
+        //        .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT") //hasAuthority to access with specific authority
+//        .requestMatchers( "/myBalance").hasAnyAuthority("VIEWBALANCE", "VIEWACCOUNT") //hasAnyAuthority to access with any of the different authorities
+//        .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
+//        .requestMatchers("/myCards").hasAuthority("VIEWCARDS")
+        .hasRole("USER") //hasAuthority to access with specific authority
+        .requestMatchers("/myBalance").hasAnyRole("USER",
+            "ADMIN") //hasAnyAuthority to access with any of the different authorities
+        .requestMatchers("/myLoans").hasAuthority("USER")
+        .requestMatchers("/myCards").hasAuthority("USER")
         .requestMatchers("/user").authenticated()
         .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession")
         .permitAll());

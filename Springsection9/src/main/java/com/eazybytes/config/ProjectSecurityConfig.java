@@ -68,19 +68,18 @@ public class ProjectSecurityConfig {
         )
         .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
 
-    //Adding session management configuration
-    http.sessionManagement(smc ->
-             smc.invalidSessionUrl("/invalidSession").maximumSessions(3) //Invalida nuevas sesiones cuando se llega al maximo de sesiones, en lugar de cerrar la anterior
-                .maxSessionsPreventsLogin(true))
-                .requiresChannel(rcc ->
-                    rcc.anyRequest().requiresInsecure()); // permite solo peticiones de HTTP y no HTTPS
-
     //Adding http requests configuration
     http.authorizeHttpRequests((requests) -> requests
-        .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT") //hasAuthority to access with specific authority
-        .requestMatchers( "/myBalance").hasAnyAuthority("VIEWBALANCE", "VIEWACCOUNT") //hasAnyAuthority to access with any of the different authorities
-        .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
-        .requestMatchers("/myCards").hasAuthority("VIEWCARDS")
+//        .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT") //hasAuthority to access with specific authority
+//        .requestMatchers( "/myBalance").hasAnyAuthority("VIEWBALANCE", "VIEWACCOUNT") //hasAnyAuthority to access with any of the different authorities
+//        .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
+//        .requestMatchers("/myCards").hasAuthority("VIEWCARDS")
+        .requestMatchers("/myAccount").hasRole("USER") //hasAuthority to access with specific authority
+        .requestMatchers("/myBalance").hasAnyRole("USER",
+            "ADMIN") //hasAnyAuthority to access with any of the different authorities
+        .requestMatchers("/myLoans").hasRole("USER")
+        .requestMatchers("/myCards").hasRole("USER")
+
         .requestMatchers("/user").authenticated()
         .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession")
         .permitAll());
