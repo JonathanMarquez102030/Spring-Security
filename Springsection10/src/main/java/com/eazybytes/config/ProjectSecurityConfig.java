@@ -3,6 +3,7 @@ package com.eazybytes.config;
 import com.eazybytes.exceptionhandling.CustomAccessDeniedHandler;
 import com.eazybytes.exceptionhandling.CustomBasicAuthenticationEntryPoint;
 import com.eazybytes.filter.CsrfCookieFilter;
+import com.eazybytes.filter.RequestValidationBeforeFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -67,6 +68,9 @@ public class ProjectSecurityConfig {
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
         )
         .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
+
+    //Adding custom filters
+    http.addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class);
 
     //Adding http requests configuration
     http.authorizeHttpRequests((requests) -> requests
