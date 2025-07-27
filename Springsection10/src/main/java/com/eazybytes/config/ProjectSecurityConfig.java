@@ -3,6 +3,7 @@ package com.eazybytes.config;
 import com.eazybytes.exceptionhandling.CustomAccessDeniedHandler;
 import com.eazybytes.exceptionhandling.CustomBasicAuthenticationEntryPoint;
 import com.eazybytes.filter.AuthoritiesLoggingAfterFilter;
+import com.eazybytes.filter.AuthoritiesLoggingAtFilter;
 import com.eazybytes.filter.CsrfCookieFilter;
 import com.eazybytes.filter.RequestValidationBeforeFilter;
 import jakarta.servlet.http.HttpServletRequest;
@@ -73,6 +74,7 @@ public class ProjectSecurityConfig {
     //Adding custom filters
     http.addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class);
     http.addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class);
+    http.addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class);
 
     //Adding http requests configuration
     http.authorizeHttpRequests((requests) -> requests
