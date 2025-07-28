@@ -2,10 +2,7 @@ package com.eazybytes.config;
 
 import com.eazybytes.exceptionhandling.CustomAccessDeniedHandler;
 import com.eazybytes.exceptionhandling.CustomBasicAuthenticationEntryPoint;
-import com.eazybytes.filter.AuthoritiesLoggingAfterFilter;
-import com.eazybytes.filter.AuthoritiesLoggingAtFilter;
-import com.eazybytes.filter.CsrfCookieFilter;
-import com.eazybytes.filter.RequestValidationBeforeFilter;
+import com.eazybytes.filter.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,8 +19,8 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-
 import java.util.Collections;
+import java.util.List;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
@@ -35,15 +32,8 @@ public class ProjectSecurityConfig {
     CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler =
         new CsrfTokenRequestAttributeHandler();
 
-    // Esta configuración se utiliza para que Spring Security no guarde
-    // explícitamente la información de la sesión en la base de datos.
-    // De esta manera, Spring Security no se encargará de guardar la
-    // información de la sesión en la base de datos, lo que mejora el rendimiento
-    // de la aplicación.
-    http.securityContext(contextConfig ->
-        contextConfig.requireExplicitSave(false));
     http.sessionManagement(sessionConfig ->
-        sessionConfig.sessionCreationPolicy(SessionCreationPolicy.ALWAYS)
+        sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
     );
 
 
@@ -57,6 +47,7 @@ public class ProjectSecurityConfig {
             corsConfiguration.setAllowedMethods(Collections.singletonList("*"));
             corsConfiguration.setAllowCredentials(true);
             corsConfiguration.setAllowedHeaders(Collections.singletonList("*"));
+            corsConfiguration.setExposedHeaders(List.of("Authorization"));
             corsConfiguration.setMaxAge(3600L);
 
             return corsConfiguration;
@@ -75,13 +66,11 @@ public class ProjectSecurityConfig {
     http.addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class);
     http.addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class);
     http.addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class);
+    http.addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class);
+    http.addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class);
 
     //Adding http requests configuration
     http.authorizeHttpRequests((requests) -> requests
-//        .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT") //hasAuthority to access with specific authority
-//        .requestMatchers( "/myBalance").hasAnyAuthority("VIEWBALANCE", "VIEWACCOUNT") //hasAnyAuthority to access with any of the different authorities
-//        .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
-//        .requestMatchers("/myCards").hasAuthority("VIEWCARDS")
         .requestMatchers("/myAccount").hasRole("USER") //hasAuthority to access with specific authority
         .requestMatchers("/myBalance").hasAnyRole("USER",
             "ADMIN") //hasAnyAuthority to access with any of the different authorities
