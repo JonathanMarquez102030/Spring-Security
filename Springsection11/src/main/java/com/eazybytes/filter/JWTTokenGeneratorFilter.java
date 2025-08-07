@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class JWTTokenGeneratorFilter extends OncePerRequestFilter {
 
   @Override
-  protected void doFilterInternal(@NonNull HttpServletRequest request, 
+  protected void doFilterInternal(@NonNull HttpServletRequest request,
                                 @NonNull HttpServletResponse response,
                                 @NonNull FilterChain filterChain) throws ServletException, IOException {
     // Obtiene la autenticación actual del contexto de seguridad de Spring
@@ -72,7 +72,7 @@ public class JWTTokenGeneratorFilter extends OncePerRequestFilter {
    *
    * @param request La peticion que se esta procesando
    * @return boolean true si el request no debe ser filtrado, false en caso
-   * contrario
+   *  contrario
    * @throws ServletException si ocurre un error al procesar el request
    */
   @Override
