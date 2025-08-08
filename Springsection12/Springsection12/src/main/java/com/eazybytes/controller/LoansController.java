@@ -14,6 +14,20 @@ public class LoansController {
 
     private final LoanRepository loanRepository;
 
+    /**
+     * Uso educativo de @PostAuthorize (evaluación después de la invocación).
+     *
+     * ¿Qué hace @PostAuthorize?
+     * - Evalúa una expresión SpEL DESPUÉS de ejecutar el método y obtener el resultado.
+     * - Permite tomar decisiones con base en el objeto retornado mediante la variable especial "returnObject".
+     * - Útil cuando la autorización depende de datos que sólo se conocen tras obtener el resultado (p. ej., propietario del recurso).
+     *
+     * Ejemplos de expresiones:
+     * - @PostAuthorize("returnObject != null && returnObject.?[owner == authentication.name].size() > 0")
+     * - @PostAuthorize("hasRole('ADMIN') or returnObject.customerId == principal.id")
+     *
+     * Nota: Documentación general para aprender @PostAuthorize, aplicable a cualquier método donde se use.
+     */
     @GetMapping("/myLoans")
 //    @PostAuthorize("hasRole('ROOT')")
     public List<Loans> getLoanDetails(@RequestParam long id) {
