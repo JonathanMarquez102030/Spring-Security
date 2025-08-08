@@ -85,7 +85,7 @@ public class ProjectSecurityProdConfig {
         .hasRole("USER") //hasAuthority to access with specific authority
         .requestMatchers("/myBalance").hasAnyRole("USER",
             "ADMIN") //hasAnyAuthority to access with any of the different authorities
-        .requestMatchers("/myLoans").hasRole("USER")
+        .requestMatchers("/myLoans").authenticated()
         .requestMatchers("/myCards").hasRole("USER")
         .requestMatchers("/user").authenticated()
         .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession", "/apiLogin")
