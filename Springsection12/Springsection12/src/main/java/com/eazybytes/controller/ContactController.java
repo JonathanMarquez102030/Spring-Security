@@ -3,7 +3,7 @@ package com.eazybytes.controller;
 import com.eazybytes.model.Contact;
 import com.eazybytes.repository.ContactRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreFilter;
+import org.springframework.security.access.prepost.PostFilter;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,9 +35,30 @@ public class ContactController {
    * - @PreFilter(value = "filterObject.active", filterTarget = "contacts")
    *
    * Nota: Esta documentación es general y aplica a cualquier uso de @PreFilter, no sólo a este método.
+   *
+   * ---------------------------------------------------------------------------------------------
+   *
+   * Ejemplo educativo de seguridad con @PostFilter.
+   *
+   * ¿Qué hace @PostFilter?
+   * - Aplica un filtro sobre el VALOR DE RETORNO cuando éste es una Collection/array, DESPUÉS de ejecutarse el método.
+   * - La condición se define con SpEL y se evalúa por cada elemento del resultado.
+   * - La variable especial "filterObject" representa el elemento actual durante el filtrado del retorno.
+   * - Puedes usar objetos del contexto de seguridad como "authentication" o "principal" en la expresión.
+   *
+   * Casos de uso comunes:
+   * - Devolver al cliente sólo los elementos del resultado para los que el usuario tiene permiso.
+   * - Aplicar reglas de visibilidad sobre colecciones construidas dentro del método (no controlables con @PreFilter).
+   *
+   * Ejemplos de expresiones:
+   * - @PostFilter("filterObject.owner == authentication.name")
+   * - @PostFilter("hasRole('ADMIN') or filterObject.publico == true")
+   *
+   * Nota: Esta documentación es general y aplica a cualquier uso de @PostFilter, no sólo a este método.
    */
   @PostMapping("/contact")
-  @PreFilter("filterObject.contactName != 'Test'")
+//  @PreFilter("filterObject.contactName != 'Test'")
+  @PostFilter("filterObject.contactName != 'Test'")
   public List<Contact> saveContactInquiryDetails(@RequestBody List<Contact> contacts) {
     if (contacts.isEmpty()) {
       return null;
