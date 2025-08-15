@@ -7,16 +7,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.authentication.password.CompromisedPasswordChecker;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
@@ -64,17 +57,6 @@ public class ProjectSecurityProdConfig {
         )
         .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
 
-    //Adding custom filters
-    http.addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class);
-    http.addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class);
-    http.addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class);
-    http.addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class);
-    http.addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class);
-
-    //Adding session management configuration
-    //http.sessionManagement(smc -> smc.invalidSessionUrl("/invalidSession").maximumSessions(1).maxSessionsPreventsLogin(true))
-    // .redirectToHttps((https) -> https.requestMatchers(AnyRequestMatcher.INSTANCE))
-    // USE THE ABOVE CONFIG FOR HTTPS IN THE NEW VERSIONS OF SPRING SECURITY
 
     http.requiresChannel(rcc -> rcc.anyRequest()
         .requiresSecure()); // forza la comunicación mediante HTTPS solamente y no HTTP
@@ -108,37 +90,4 @@ public class ProjectSecurityProdConfig {
     );
     return http.build();
   }
-
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-  }
-
-  /**
-   * From Spring Security 6.3 version
-   *
-   * @return
-   */
-  @Bean
-  public CompromisedPasswordChecker compromisedPasswordChecker() {
-    return new HaveIBeenPwnedRestApiPasswordChecker();
-  }
-
-  /**
-   * AuthenticationManager basado en un Provider personalizado que
-   * valida usuario/contraseña contra la fuente definida por UserDetailsService.
-   * Se desactiva el borrado de credenciales post-autenticación para facilitar
-   * ciertos casos de logging/auditoría (no recomendado en producción).
-   */
-  @Bean
-  public AuthenticationManager authenticationManager(UserDetailsService userDetailsService,
-                                                     PasswordEncoder passwordEncoder) {
-    EazyBankProdUsernamePwdAuthenticationProvider authenticationProvider =
-        new EazyBankProdUsernamePwdAuthenticationProvider(userDetailsService, passwordEncoder);
-
-    ProviderManager providerManager = new ProviderManager(Collections.singletonList(authenticationProvider));
-    providerManager.setEraseCredentialsAfterAuthentication(false);
-    return providerManager;
-  }
-
 }

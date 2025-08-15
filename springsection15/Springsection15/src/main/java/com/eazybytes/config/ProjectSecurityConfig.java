@@ -7,25 +7,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.authentication.password.CompromisedPasswordChecker;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.password.HaveIBeenPwnedRestApiPasswordChecker;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-
 import java.util.Collections;
 import java.util.List;
-
 import static org.springframework.security.config.Customizer.withDefaults;
 
 /**
@@ -140,11 +131,6 @@ public class ProjectSecurityConfig {
    * - CsrfCookieFilter: después de BasicAuthenticationFilter (envía cookie CSRF)
    */
   private void registerCustomFilters(HttpSecurity http) throws Exception {
-    http.addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class);
-    http.addFilterAt(new AuthoritiesLoggingAtFilter(), BasicAuthenticationFilter.class);
-    http.addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class);
-    http.addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class);
-    http.addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class);
     http.addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
   }
 
@@ -182,40 +168,5 @@ public class ProjectSecurityConfig {
    */
   private void configureExceptionHandling(HttpSecurity http) throws Exception {
     http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
-  }
-
-  /**
-   * Provee un PasswordEncoder delegante, que permite múltiples formatos/hash y
-   * antepone el identificador del esquema (por ejemplo {bcrypt}). Recomendado por Spring Security.
-   */
-  @Bean
-  public PasswordEncoder passwordEncoder() {
-    return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-  }
-
-  /**
-   * Verificador de contraseñas comprometidas (Spring Security 6.3+).
-   * Usa el servicio HaveIBeenPwned para alertar sobre passwords filtradas.
-   */
-  @Bean
-  public CompromisedPasswordChecker compromisedPasswordChecker() {
-    return new HaveIBeenPwnedRestApiPasswordChecker();
-  }
-
-  /**
-   * AuthenticationManager basado en un Provider personalizado que
-   * valida usuario/contraseña contra la fuente definida por UserDetailsService.
-   * Se desactiva el borrado de credenciales post-autenticación para facilitar
-   * ciertos casos de logging/auditoría (no recomendado en producción).
-   */
-  @Bean
-  public AuthenticationManager authenticationManager(UserDetailsService userDetailsService,
-                                                     PasswordEncoder passwordEncoder) {
-    EazyBankUsernamePwdAuthenticationProvider authenticationProvider =
-        new EazyBankUsernamePwdAuthenticationProvider(userDetailsService, passwordEncoder);
-
-    ProviderManager providerManager = new ProviderManager(Collections.singletonList(authenticationProvider));
-    providerManager.setEraseCredentialsAfterAuthentication(false);
-    return providerManager;
   }
 }
