@@ -70,65 +70,65 @@ public class ProjectSecurityConfig {
     return http.build();
   }
 
-  /**
-   * Repositorio de registros de clientes OAuth2 en memoria.
-   * <p>
-   * Qué hace:
-   * <ul>
-   *   <li>Registra los proveedores externos disponibles para OAuth2 Login.</li>
-   *   <li>Permite a Spring Security resolver la configuración de cada proveedor (clientId, secretos, endpoints).</li>
-   * </ul>
-   * Cuándo usar:
-   * <ul>
-   *   <li>Útil para demos, pruebas o configuraciones simples.</li>
-   *   <li>En producción, considera externalizar a properties o a un repositorio persistente.</li>
-   * </ul>
-   *
-   * @return un repositorio en memoria con las configuraciones de GitHub y Facebook
-   */
-  @Bean
-  ClientRegistrationRepository clientRegistrationRepository() {
-    ClientRegistration githubClientRegistration = githubClientRegistration();
-    ClientRegistration facebookClientRegistration = facebookClientRegistration();
-    return new InMemoryClientRegistrationRepository(githubClientRegistration,
-        facebookClientRegistration);
-  }
-
-  /**
-   * Registro de cliente OAuth2 para GitHub.
-   * <p>
-   * Qué hace:
-   * <ul>
-   *   <li>Construye una configuración de cliente usando CommonOAuth2Provider.GITHUB, que ya trae
-   *       endpoints y scopes típicos preconfigurados.</li>
-   * </ul>
-   * Nota de seguridad: evita exponer clientId/clientSecret en el código. Cárgalos desde
-   * propiedades o variables de entorno.
-   *
-   * @return un ClientRegistration listo para usarse en oauth2Login con GitHub
-   */
-  private ClientRegistration githubClientRegistration() {
-    return CommonOAuth2Provider.GITHUB.getBuilder("github").clientId("Ov23li7hVP9vsATSnwKO")
-        .clientSecret("052447809a970293900a54f9aa881746113e5bd1").build();
-  }
-
-  /**
-   * Registro de cliente OAuth2 para Facebook.
-   * <p>
-   * Qué hace:
-   * <ul>
-   *   <li>Construye una configuración de cliente usando CommonOAuth2Provider.FACEBOOK, con valores
-   *       por defecto de endpoints/scopes.</li>
-   * </ul>
-   * Nota de seguridad: evita exponer clientId/clientSecret en el código. Cárgalos desde
-   * propiedades o variables de entorno.
-   *
-   * @return un ClientRegistration listo para usarse en oauth2Login con Facebook
-   */
-  private ClientRegistration facebookClientRegistration() {
-    return CommonOAuth2Provider.FACEBOOK.getBuilder("facebook").clientId("1324986002519262")
-        .clientSecret("da9913105d2b373c2a79067c635177e2").build();
-  }
+//  /**
+//   * Repositorio de registros de clientes OAuth2 en memoria.
+//   * <p>
+//   * Qué hace:
+//   * <ul>
+//   *   <li>Registra los proveedores externos disponibles para OAuth2 Login.</li>
+//   *   <li>Permite a Spring Security resolver la configuración de cada proveedor (clientId, secretos, endpoints).</li>
+//   * </ul>
+//   * Cuándo usar:
+//   * <ul>
+//   *   <li>Útil para demos, pruebas o configuraciones simples.</li>
+//   *   <li>En producción, considera externalizar a properties o a un repositorio persistente.</li>
+//   * </ul>
+//   *
+//   * @return un repositorio en memoria con las configuraciones de GitHub y Facebook
+//   */
+//  @Bean
+//  ClientRegistrationRepository clientRegistrationRepository() {
+//    ClientRegistration githubClientRegistration = githubClientRegistration();
+//    ClientRegistration facebookClientRegistration = facebookClientRegistration();
+//    return new InMemoryClientRegistrationRepository(githubClientRegistration,
+//        facebookClientRegistration);
+//  }
+//
+//  /**
+//   * Registro de cliente OAuth2 para GitHub.
+//   * <p>
+//   * Qué hace:
+//   * <ul>
+//   *   <li>Construye una configuración de cliente usando CommonOAuth2Provider.GITHUB, que ya trae
+//   *       endpoints y scopes típicos preconfigurados.</li>
+//   * </ul>
+//   * Nota de seguridad: evita exponer clientId/clientSecret en el código. Cárgalos desde
+//   * propiedades o variables de entorno.
+//   *
+//   * @return un ClientRegistration listo para usarse en oauth2Login con GitHub
+//   */
+//  private ClientRegistration githubClientRegistration() {
+//    return CommonOAuth2Provider.GITHUB.getBuilder("github").clientId("Ov23li7hVP9vsATSnwKO")
+//        .clientSecret("052447809a970293900a54f9aa881746113e5bd1").build();
+//  }
+//
+//  /**
+//   * Registro de cliente OAuth2 para Facebook.
+//   * <p>
+//   * Qué hace:
+//   * <ul>
+//   *   <li>Construye una configuración de cliente usando CommonOAuth2Provider.FACEBOOK, con valores
+//   *       por defecto de endpoints/scopes.</li>
+//   * </ul>
+//   * Nota de seguridad: evita exponer clientId/clientSecret en el código. Cárgalos desde
+//   * propiedades o variables de entorno.
+//   *
+//   * @return un ClientRegistration listo para usarse en oauth2Login con Facebook
+//   */
+//  private ClientRegistration facebookClientRegistration() {
+//    return CommonOAuth2Provider.FACEBOOK.getBuilder("facebook").clientId("1324986002519262")
+//        .clientSecret("da9913105d2b373c2a79067c635177e2").build();
+//  }
 
 
 }
