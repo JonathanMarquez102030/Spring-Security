@@ -1,14 +1,14 @@
 package com.eazybytes.config;
 
 import com.eazybytes.exceptionhandling.CustomAccessDeniedHandler;
-import com.eazybytes.exceptionhandling.CustomBasicAuthenticationEntryPoint;
-import com.eazybytes.filter.*;
+import com.eazybytes.filter.CsrfCookieFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
@@ -17,11 +17,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import java.util.Collections;
 import java.util.List;
-import static org.springframework.security.config.Customizer.withDefaults;
 
 /**
  * Configuración de seguridad para el perfil no productivo ("!prod").
- *
+ * <p>
  * Esta clase está pensada como guía de aprendizaje para comprender cómo se arma la
  * cadena de filtros de Spring Security y cómo se configuran las principales
  * preocupaciones de seguridad: sesiones, CORS, CSRF, filtros personalizados,
@@ -33,20 +32,21 @@ public class ProjectSecurityConfig {
 
   /**
    * Define la cadena principal de filtros de seguridad y todas las políticas asociadas.
-   *
+   * <p>
    * Orden de configuración (importante para entender el flujo):
-   * 1) Sesiones sin estado (stateless) para trabajar con JWT.  
-   * 2) CORS para permitir peticiones desde el front (Angular en localhost:4200).  
-   * 3) CSRF con cookie y handler, ignorando ciertos endpoints públicos.  
-   * 4) Registro de filtros personalizados (validación, logging, JWT, CSRF cookie).  
-   * 5) Reglas de autorización por endpoint/rol.  
-   * 6) Form login (para pruebas) y HTTP Basic con entry point personalizado.  
+   * 1) Sesiones sin estado (stateless) para trabajar con JWT.
+   * 2) CORS para permitir peticiones desde el front (Angular en localhost:4200).
+   * 3) CSRF con cookie y handler, ignorando ciertos endpoints públicos.
+   * 4) Registro de filtros personalizados (validación, logging, JWT, CSRF cookie).
+   * 5) Reglas de autorización por endpoint/rol.
+   * 6) Form login (para pruebas) y HTTP Basic con entry point personalizado.
    * 7) Manejadores globales de excepciones (AccessDenied, etc.).
-   *
+   * <p>
    * Nota: No se modifica el comportamiento original; sólo se reorganiza para lectura.
    */
   @Bean
   SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+
     // 1) Sesión stateless
     configureSessionStateless(http);
 
@@ -62,9 +62,12 @@ public class ProjectSecurityConfig {
     // 5) Autorizaciones por endpoint
     configureAuthorization(http);
 
-    // 6) Form login y HTTP Basic (con entry point personalizado)
-    configureFormLogin(http);
-    configureHttpBasic(http);
+    // 6) Servidor de Recursos OAuth2 (JWT):
+    //    - Habilita la validación de tokens Bearer entrantes y la construcción del Authentication desde el JWT.
+    //    - Usa JwtAuthenticationConverter con KeycloakRoleConverter para traducir claims de roles a GrantedAuthority ("ROLE_*"),
+    //      de modo que las reglas de autorización funcionen con hasRole/hasAnyRole.
+    //    - Requiere tener configurado issuer o jwk-set-uri y que el cliente envíe Authorization: Bearer <token>.
+    configureOAuth2ResourceServer(http);
 
     // 7) Manejo global de excepciones (AccessDenied, etc.)
     configureExceptionHandling(http);
@@ -76,7 +79,8 @@ public class ProjectSecurityConfig {
    * Configura la política de sesión como STATELESS (sin estado), ideal para APIs con JWT.
    */
   private void configureSessionStateless(HttpSecurity http) throws Exception {
-    http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+    http.sessionManagement(
+        session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
   }
 
   /**
@@ -115,7 +119,7 @@ public class ProjectSecurityConfig {
 
     http.csrf(csrf -> csrf
         .csrfTokenRequestHandler(csrfHandler)
-        .ignoringRequestMatchers("/register", "/contact", "/apiLogin")
+        .ignoringRequestMatchers("/register", "/contact")
         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
     );
   }
@@ -144,23 +148,48 @@ public class ProjectSecurityConfig {
         .requestMatchers("/myLoans").authenticated()
         .requestMatchers("/myCards").hasRole("USER")
         .requestMatchers("/user").authenticated()
-        .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession", "/apiLogin").permitAll()
+        .requestMatchers("/notices", "/contact", "/error", "/register").permitAll()
     );
   }
 
   /**
-   * Habilita el formulario de login por defecto (útil para pruebas/manual testing).
+   * Configura este servicio como un OAuth2 Resource Server basado en JWT.
+   *
+   * Qué hace:
+   * - Activa la validación y extracción de autenticación desde tokens JWT entrantes
+   *   (oauth2ResourceServer().jwt()).
+   * - Define cómo convertir los claims del token en autoridades de Spring (GrantedAuthority)
+   *   mediante un JwtAuthenticationConverter que delega en {@code KeycloakRoleConverter}.
+   *
+   * Para qué:
+   * - Permite proteger endpoints usando roles/authorities incluidos en el JWT emitido por
+   *   un IdP (por ejemplo, Keycloak) y evaluarlos con las reglas de
+   *   {@link #configureAuthorization(HttpSecurity)}.
+   * - Facilita arquitecturas stateless típicas de APIs REST donde no hay sesión de servidor.
+   *
+   * Cómo:
+   * 1) Crea un JwtAuthenticationConverter.
+   * 2) Configura un converter de autoridades que lee los claims específicos del proveedor
+   *    (p. ej., realm_access/resource_access en Keycloak) y los mapea a autoridades con el
+   *    prefijo/formato esperado por Spring (p. ej., "ROLE_USER").
+   * 3) Registra dicho converter en la configuración JWT del Resource Server para que Spring
+   *    lo use al construir el Authentication del request.
+   *
+   * Requisitos de entorno:
+   * - Definir el issuer o jwk-set-uri en la configuración de la aplicación para validar la firma.
+   * - Enviar Authorization: Bearer <JWT> en cada petición a endpoints protegidos.
+   *
+   * Notas:
+   * - Aquí no se generan tokens; solo se validan y se extraen autoridades.
+   * - Si cambia el proveedor o el formato de claims, ajusta {@code KeycloakRoleConverter} para
+   *   mapear correctamente a GrantedAuthority.
    */
-  private void configureFormLogin(HttpSecurity http) throws Exception {
-    http.formLogin(withDefaults());
-  }
-
-  /**
-   * Configura HTTP Basic con un entry point personalizado que devuelve
-   * respuestas de error con formato JSON.
-   */
-  private void configureHttpBasic(HttpSecurity http) throws Exception {
-    http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
+  private void configureOAuth2ResourceServer(HttpSecurity http) throws Exception {
+    JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+    jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new KeycloakRoleConverter());
+    http.oauth2ResourceServer(
+        rsc -> rsc.jwt(
+            jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter)));
   }
 
   /**

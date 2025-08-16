@@ -1,14 +1,14 @@
 package com.eazybytes.config;
 
 import com.eazybytes.exceptionhandling.CustomAccessDeniedHandler;
-import com.eazybytes.exceptionhandling.CustomBasicAuthenticationEntryPoint;
-import com.eazybytes.filter.*;
+import com.eazybytes.filter.CsrfCookieFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
@@ -17,7 +17,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import java.util.Collections;
 import java.util.List;
-import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @Profile("prod")
@@ -25,6 +24,9 @@ public class ProjectSecurityProdConfig {
 
   @Bean
   SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+    JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+    jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(new KeycloakRoleConverter());
+
     CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler =
         new CsrfTokenRequestAttributeHandler();
 
@@ -70,16 +72,13 @@ public class ProjectSecurityProdConfig {
         .requestMatchers("/myLoans").authenticated()
         .requestMatchers("/myCards").hasRole("USER")
         .requestMatchers("/user").authenticated()
-        .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession", "/apiLogin")
+        .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession",
+            "/apiLogin")
         .permitAll());
 
-    http.formLogin(withDefaults());
-
-    http.httpBasic(hbc ->
-        // - Establece un punto de entrada personalizado para manejar errores de autenticación
-        // - Proporciona una respuesta JSON personalizada con detalles del error
-        hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint())
-    );
+    http.oauth2ResourceServer(
+        rsc -> rsc.jwt(
+            jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter)));
 
     // Configura el manejo global de excepciones de autenticación y autorización
     http.exceptionHandling(ehc ->
