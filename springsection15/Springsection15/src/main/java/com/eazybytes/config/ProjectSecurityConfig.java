@@ -30,6 +30,16 @@ import java.util.List;
 @Profile("!prod")
 public class ProjectSecurityConfig {
 
+//  @Value("${spring.security.oauth2.resourceserver.opaque.introspection-uri}")
+//  String introspectionUri;
+//
+//  @Value("${spring.security.oauth2.resourceserver.opaque.introspection-client-id}")
+//  String clientId;
+//
+//  @Value("${spring.security.oauth2.resourceserver.opaque.introspection-client-secret}")
+//  String clientSecret;
+
+
   /**
    * Define la cadena principal de filtros de seguridad y todas las políticas asociadas.
    * <p>
@@ -68,6 +78,13 @@ public class ProjectSecurityConfig {
     //      de modo que las reglas de autorización funcionen con hasRole/hasAnyRole.
     //    - Requiere tener configurado issuer o jwk-set-uri y que el cliente envíe Authorization: Bearer <token>.
     configureOAuth2ResourceServer(http);
+
+//    http.oauth2ResourceServer(rsc -> rsc.opaqueToken(
+//        opaqueToken -> opaqueToken
+//            .authenticationConverter(new KeycloakOpaqueRoleConverter())
+//            .introspectionUri(this.introspectionUri)
+//            .introspectionClientCredentials(this.clientId,this.clientSecret)
+//    ));
 
     // 7) Manejo global de excepciones (AccessDenied, etc.)
     configureExceptionHandling(http);
@@ -154,35 +171,35 @@ public class ProjectSecurityConfig {
 
   /**
    * Configura este servicio como un OAuth2 Resource Server basado en JWT.
-   *
+   * <p>
    * Qué hace:
    * - Activa la validación y extracción de autenticación desde tokens JWT entrantes
-   *   (oauth2ResourceServer().jwt()).
+   * (oauth2ResourceServer().jwt()).
    * - Define cómo convertir los claims del token en autoridades de Spring (GrantedAuthority)
-   *   mediante un JwtAuthenticationConverter que delega en {@code KeycloakRoleConverter}.
-   *
+   * mediante un JwtAuthenticationConverter que delega en {@code KeycloakRoleConverter}.
+   * <p>
    * Para qué:
    * - Permite proteger endpoints usando roles/authorities incluidos en el JWT emitido por
-   *   un IdP (por ejemplo, Keycloak) y evaluarlos con las reglas de
-   *   {@link #configureAuthorization(HttpSecurity)}.
+   * un IdP (por ejemplo, Keycloak) y evaluarlos con las reglas de
+   * {@link #configureAuthorization(HttpSecurity)}.
    * - Facilita arquitecturas stateless típicas de APIs REST donde no hay sesión de servidor.
-   *
+   * <p>
    * Cómo:
    * 1) Crea un JwtAuthenticationConverter.
    * 2) Configura un converter de autoridades que lee los claims específicos del proveedor
-   *    (p. ej., realm_access/resource_access en Keycloak) y los mapea a autoridades con el
-   *    prefijo/formato esperado por Spring (p. ej., "ROLE_USER").
+   * (p. ej., realm_access/resource_access en Keycloak) y los mapea a autoridades con el
+   * prefijo/formato esperado por Spring (p. ej., "ROLE_USER").
    * 3) Registra dicho converter en la configuración JWT del Resource Server para que Spring
-   *    lo use al construir el Authentication del request.
-   *
+   * lo use al construir el Authentication del request.
+   * <p>
    * Requisitos de entorno:
    * - Definir el issuer o jwk-set-uri en la configuración de la aplicación para validar la firma.
    * - Enviar Authorization: Bearer <JWT> en cada petición a endpoints protegidos.
-   *
+   * <p>
    * Notas:
    * - Aquí no se generan tokens; solo se validan y se extraen autoridades.
    * - Si cambia el proveedor o el formato de claims, ajusta {@code KeycloakRoleConverter} para
-   *   mapear correctamente a GrantedAuthority.
+   * mapear correctamente a GrantedAuthority.
    */
   private void configureOAuth2ResourceServer(HttpSecurity http) throws Exception {
     JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
