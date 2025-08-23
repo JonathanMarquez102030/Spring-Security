@@ -12,13 +12,12 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
@@ -28,7 +27,8 @@ import org.springframework.security.oauth2.server.authorization.settings.Authori
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.oauth2.server.authorization.settings.OAuth2TokenFormat;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.oauth2.server.authorization.token.JwtEncodingContext;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
@@ -37,8 +37,11 @@ import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
@@ -101,7 +104,41 @@ public class ProjectSecurityConfig {
             .accessTokenFormat(OAuth2TokenFormat.SELF_CONTAINED)
             .build())
         .build();
-    return new InMemoryRegisteredClientRepository(clientCredClient);
+
+    RegisteredClient authCodeClient = RegisteredClient.withId(UUID.randomUUID().toString())
+        .clientId("eazybankclient")
+        .clientSecret("{noop}QiH98ygI7t7gUJ7GD6U7fj7D5d5")
+        .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
+        .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+        .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+        .redirectUri("https://oauth.pstmn.io/v1/callback")
+        .scope(OidcScopes.OPENID).scope(OidcScopes.EMAIL)
+        .tokenSettings(TokenSettings
+            .builder()
+            .accessTokenTimeToLive(Duration.ofMinutes(10))
+            .refreshTokenTimeToLive(Duration.ofHours(8))
+            .reuseRefreshTokens(false)
+            .accessTokenFormat(OAuth2TokenFormat.SELF_CONTAINED)
+            .build())
+        .build();
+
+    RegisteredClient PkceClient = RegisteredClient.withId(UUID.randomUUID().toString())
+        .clientId("eazypublicclient")
+        .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
+        .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
+        .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+        .redirectUri("https://oauth.pstmn.io/v1/callback")
+        .scope(OidcScopes.OPENID).scope(OidcScopes.EMAIL)
+        .clientSettings(ClientSettings.builder().requireProofKey(true).build())
+        .tokenSettings(TokenSettings
+            .builder()
+            .accessTokenTimeToLive(Duration.ofMinutes(10))
+            .refreshTokenTimeToLive(Duration.ofHours(8))
+            .reuseRefreshTokens(false)
+            .accessTokenFormat(OAuth2TokenFormat.SELF_CONTAINED)
+            .build())
+        .build();
+    return new InMemoryRegisteredClientRepository(clientCredClient, authCodeClient, PkceClient);
   }
 
   @Bean
@@ -137,5 +174,49 @@ public class ProjectSecurityConfig {
   @Bean
   public AuthorizationServerSettings authorizationServerSettings() {
     return AuthorizationServerSettings.builder().build();
+  }
+
+  /**
+   * Personaliza los tokens JWT agregando la información de roles según el tipo de concesión de autorización.
+   * Para el flujo de client credentials, los roles se derivan del scope.
+   * Para el flujo de authorization code, los roles se extraen de las autoridades del usuario.
+   *
+   * @return OAuth2TokenCustomizer que enriquece los tokens JWT con información de roles
+   */
+  @Bean
+  public OAuth2TokenCustomizer<JwtEncodingContext> jwtTokenCustomizer() {
+    return (context) -> {
+      // Only customize access tokens
+      if (context.getTokenType().equals(OAuth2TokenType.ACCESS_TOKEN)) {
+        context.getClaims().claims((claims) -> {
+          Set<String> roles = extractRoles(context);
+          claims.put("roles", roles);
+        });
+      }
+    };
+  }
+
+  /**
+   * Extrae los roles con base en el tipo de concesión de autorización
+   */
+  private Set<String> extractRoles(JwtEncodingContext context) {
+    if (context.getAuthorizationGrantType().equals(AuthorizationGrantType.CLIENT_CREDENTIALS)) {
+      return extractClientCredentialsRoles(context);
+    } else if (context.getAuthorizationGrantType()
+        .equals(AuthorizationGrantType.AUTHORIZATION_CODE)) {
+      return extractAuthorizationCodeRoles(context);
+    }
+    return Collections.emptySet();
+  }
+
+  private Set<String> extractClientCredentialsRoles(JwtEncodingContext context) {
+    return context.getClaims().build().getClaim("scope");
+  }
+
+  private Set<String> extractAuthorizationCodeRoles(JwtEncodingContext context) {
+    return AuthorityUtils.authorityListToSet(context.getPrincipal().getAuthorities())
+        .stream()
+        .map(authority -> authority.replaceFirst("^ROLE_", ""))
+        .collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
   }
 }
