@@ -193,8 +193,20 @@ public class ProjectSecurityConfig {
       // Only customize access tokens
       if (context.getTokenType().equals(OAuth2TokenType.ACCESS_TOKEN)) {
         context.getClaims().claims((claims) -> {
-          Set<String> roles = extractRoles(context);
-          claims.put("roles", roles);
+          if (context.getAuthorizationGrantType()
+              .equals(AuthorizationGrantType.CLIENT_CREDENTIALS)) {
+            Set<String> roles = extractRoles(context);
+            claims.put("roles", roles);
+          } else if (context.getAuthorizationGrantType()
+              .equals(AuthorizationGrantType.AUTHORIZATION_CODE)) {
+            Set<String> roles =
+                AuthorityUtils.authorityListToSet(context.getPrincipal().getAuthorities())
+                    .stream()
+                    .map(c -> c.replaceFirst("^ROLE_", ""))
+                    .collect(Collectors.collectingAndThen(Collectors.toSet(),
+                        Collections::unmodifiableSet));
+            claims.put("roles", roles);
+          }
         });
       }
     };
